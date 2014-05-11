@@ -1,5 +1,4 @@
 import(GenomicRanges)
-import(GenomeInfoDb)
 import(VariantAnnotation)
 import(ggplot2)
 import(IRanges)
@@ -15,7 +14,6 @@ importFrom(reshape2, melt, acast)
 importFrom(ggbio, plotGrandLinear)
 importFrom(stringr, str_split_fixed)
 importFrom(pcaMethods, pca, scores, loadings) ## fitted comes from 'stats'
-importFrom(fastICA, fastICA)
 importFrom(gtools, mixedsort)
 
 exportPattern("^[^\\.]")
