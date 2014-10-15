@@ -1,52 +1,80 @@
-mutationContextMatrix <- function(x, group = "sample", normalize = TRUE) {
+identifySignaturesVRanges <- function(vr, group, nSigs, decomposition = c("nmf", "pca"), ..., includeFit = FALSE) {
 
-    d = as(mcols(x), "data.frame")
-    group_string = paste0(group, " ~ motif")
-    d$motif = factor(paste(d$alteration, d$context))
-    y = t(acast(d, group_string, value.var = "motif", fun.aggregate = length))
+    decomposition = match.arg(decomposition)
 
-    if(normalize)
-        y = t(t(y) / colSums(y))
+    m = motifMatrix(vr, group, normalize = TRUE)
     
-    return(y)
-}
-
-
-findSignatures <- function(x, r, method = c("nmf", "pca", "kmeans"), ...) {
-
-    method = match.arg(method)
-    
-    y = switch(method,
-        nmf = nmfSignatures(x, r, ...),
-        pca = pcaSignatures(x, r, ...),
-        kmeans = kmeansSignatures(x, r, ...)
-        )
-    
-    return(y)
-}
-
-
-nmfSignatures <- function(x, r, seed = "ica", ...) {
-    
-    y = nmf(x, r, seed = seed, ...)
-
-    ## extract the data
-    w = basis(y) ## signatures x k
-    h = t(coef(y)) ## samples x k
-    sig_names = paste0("S", 1:r)
-    colnames(w) = colnames(h) = sig_names
-    v = fitted(y)
-    res = list(w = w, h = h, v = v, raw = y)
+    res = findSignatures(m, nSigs, decomposition, ..., includeFit = includeFit)
+    res@decomposition = decomposition
+    res@options = list(...)
 
     return(res)
 }
 
 
-kmeansSignatures <- function(x, r, ...) {
+identifySignatures <- function(m, nSigs, decomposition = c("nmf", "pca"), ..., includeFit = FALSE) {
+
+    res = findSignatures(m, nSigs, decomposition, ..., includeFit = includeFit)
+
+    return(res)
+}
+
+
+findSignatures <- function(x, r, decomposition = c("nmf", "pca"), ..., includeFit = FALSE) {
+
+    decomposition = match.arg(decomposition)
+    
+    dc = switch(decomposition,
+        nmf = .nmfSignatures(x, r, ..., includeFit = includeFit),
+        pca = .pcaSignatures(x, r, ..., includeFit = includeFit),
+        kmeans = .kmeansSignatures(x, r, ..., includeFit = includeFit)
+        )
+
+    res = new("MutationalSignatures",
+        signatures = dc$w,
+        samples = dc$h,
+        fitted = dc$v,
+        observed = dc$m,
+        nSignatures = r)
+    if(includeFit)
+        res@raw = dc$raw
+
+    return(res)
+}
+
+
+.nmfSignatures <- function(x, r, ..., includeFit = FALSE) {
+    
+    #args = c(list(...), defaultArgs)
+    #args = args[!duplicated(names(args))]
+    #y = nmf(x, r, seed = args$seed, ... = unlist(args))
+
+    y = nmf(x, r, ...)
+
+    w = basis(y) ## signatures x k
+    h = t(coef(y)) ## samples x k
+
+    ## order signatures
+    ord = order(rowMax(t(w)), decreasing = TRUE)
+    w = w[ ,ord]
+    h = h[ ,ord]
+    
+    sig_names = paste0("S", 1:r)
+    colnames(w) = colnames(h) = sig_names
+    v = fitted(y)
+
+    res = list(w = w, h = h, v = v, m = x, r = r)
+    if(includeFit)
+        res[["raw"]] = y
+
+    return(res)
+}
+
+
+.kmeansSignatures <- function(x, r, ..., includeFit = FALSE) {
 
     y = kmeans(t(x), centers = r)
     
-    ## extract the data
     w = t(y$centers)
     n_samples = ncol(x)
     h = matrix(0, r, n_samples)
@@ -57,18 +85,17 @@ kmeansSignatures <- function(x, r, ...) {
     sig_names = paste0("S", 1:r)
     colnames(w) = colnames(h) = sig_names
     v = fitted(y)
-    res = list(w = w, h = h, v = v, raw = y)
+
+    res = list(w = w, h = h, v = v, m = x, r = r)
+    if(includeFit)
+        res[["raw"]] = y
 
     return(res)    
 }
 
 
-pcaSignatures <- function(x, r, ...) {
+.pcaSignatures <- function(x, r, ..., includeFit = FALSE) {
   
-    #pca = pr    #w = pca$rotation ## signatures x k
-    #h = pca$x ## samples x k
-    #v = scale(h %*% t(w), pca$center, pca$scale)
-    
     y = pca(x, "svd", r, scale = "uv", ...)
     w = scores(y) ## signatures x k
     h = loadings(y) ## samples x k
@@ -76,7 +103,10 @@ pcaSignatures <- function(x, r, ...) {
     
     sig_names = paste0("S", 1:r)      
     colnames(w) = colnames(h) = sig_names
-    res = list(w = w, h = h, v = v, raw = y)
-  
+
+    res = list(w = w, h = h, v = v, m = x, r = r)
+    if(includeFit)
+        res[["raw"]] = y
+    
     return(res)    
 }

@@ -95,19 +95,6 @@ mutationContextH5vc(vc, ms, unify = TRUE)
   vr1 = readMutect(mutect_path)
   ct1 = mutationContextMutect(vr1)
 
-
-  library(h5vc)
-  library(h5vcData)
-
-  tally_file = system.file("extdata", "example.tally.hfs5", package = "h5vcData")
-  data("example.variants", package = "h5vcData")
-  ms = mutationSpectrum(variantCalls, tally_file, "/ExampleStudy", context = 1)
-  vc = variantCalls
-
-  vr2 = mutationContextH5vc(vc, ms)
-  vr2$sample = sampleNames(vr2)
-  ct2 = mutationContextMatrix(vr2)
-
 }
  
 \keyword{manip}

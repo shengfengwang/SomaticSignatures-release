@@ -1,17 +1,8 @@
 \name{mutational-signatures}
 
 \alias{mutational-signatures}
-\alias{mutationContextMatrix}
-\alias{findSignatures}
-\alias{nmfSignatures}
-\alias{kmeansSignatures}
-\alias{pcaSignatures}
+\alias{identifySignatures}
 \alias{extractSignatures}
-\alias{plotSamplesObserved}
-\alias{plotSignatureMap}
-\alias{plotSignatures}
-\alias{plotSampleMap}
-\alias{plotSamples}
 
 \title{Estimate Somatic Signatures}
 
@@ -23,61 +14,62 @@
 }
 
 \usage{
-mutationContextMatrix(x, group = "sample", normalize = TRUE)
-
-findSignatures(x, r, method = c("nmf", "pca", "kmeans"), ...)
-nmfSignatures(x, r, seed = "ica", ...)
-kmeansSignatures(x, r, ...)
-pcaSignatures(x, r, ...)
-
-plotSamplesObserved(s, group = "study")
-plotSignatureMap(s)
-plotSignatures(s)
-plotSampleMap(s)
-plotSamples(s)
+identifySignatures(m, nSigs, decomposition = c("nmf", "pca"), ..., includeFit = FALSE)
 }
 
 \arguments{
 
-  \item{x}{GRanges object [required]}
+  \item{m}{GRanges object [required]}
 
-  \item{group}{Grouping variable name [character, default: 'sample']}
+  \item{nSigs}{Number of signatures [integer, required]}
 
-  \item{normalize}{Normalize to frequency}
-
-  \item{r}{Number of signatures [integer, required]}
-
-  \item{method}{Method to apply (currently: 'nmf' or 'kmeans')}
-
-  \item{seed}{seed for NMF, default: "ica"}
+  \item{decomposition}{Method to apply (currently: 'nmf' or 'pca')}
 
   \item{...}{Additional arguments passed to 'NMF::nmf'}
 
-  \item{s}{results signature object}
+  \item{includeFit}{Include the fit object returned by the low-level
+    decomposition function in the output.}
 
 }
 
 \details{
-
-  The 'mutationContextMatrix' function transforms the metadata columns
-  of a 'VRanges' object, as returned by the 'mutationContext' function,
-  to a matrix of the form 'motifs x samples'.  This constitutes the
-  bases for the estimation of the signatures.
   
   The 'nmfSignatures', 'pcaSignatures', and 'kmeansSignatures' functions
   estimate a set of 'r' somatic signatures using the NMF, PCA, or
   k-means clustering, respectively.
-
-  With the plotting function, the obtained signatures and their
-  occurrance in the samples can be visualized either as a heatmap
-  ('plotSignatureMap', 'plotSampleMap') or a barchart ('plotSignature',
-  'plotSamples').
   
 }
+
+\value{
+
+  The 'signature' functions return a list with the elements:
+
+  \itemize{
+    
+    \item{w}{Matrix of the form 'motif x signature'}
+    
+    \item{h}{Matrix of the form 'sample x signature'}
+    
+    \item{v}{Matrix of the form 'motif x sample', containing the
+      reconstruction of 'm' from 'w' and 'h'.}
+    
+    \item{m}{Input matrix 'm'}
+    
+    \item{r}{Number of signatures.}
+    
+    \item{fit}{Fit object returned by the low-level decomposition
+      function, if 'includeFit' is true.}
+
+  }
+  
+}
+
 
 \seealso{
 
   'mutationContext', 'mutationContextMutect'
+
+  'motifMatrix'
 
   'NMF' package, 'pcaMethods' package, 'prcomp', 'kmeans'
 
