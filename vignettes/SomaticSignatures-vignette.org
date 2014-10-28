@@ -34,7 +34,7 @@
   opts_chunk$set(comment = "  ",
                  fig.path = "",
                  fig.align = "center",
-                 out.width = "80%",
+                 out.width = "50%",
                  dpi = 300,
                  indent = 10,
                  cache = FALSE,
@@ -701,6 +701,15 @@ extension, a probabilistic approach based on Poisson processes has been proposed
 
 
 * Frequently Asked Questions
+
+** Citing SomaticSignatures
+
+If you use the =SomaticSignatures= package in your work, please cite it:
+
+#+BEGIN_SRC R
+  citation("SomaticSignatures")
+#+END_SRC
+
 
 ** Getting help
 
