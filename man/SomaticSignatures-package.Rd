@@ -7,7 +7,10 @@
 
 \description{
 
-  Identifying somatic signatures of single nucleotide variants.
+  Identifying somatic signatures of single nucleotide variants.  This
+  package provides a infrastructure related to the methodology described
+  in Nik-Zainal (2012, Cell), with flexibility in the matrix
+  decomposition algorithms.
 
 }
 
